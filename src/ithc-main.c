@@ -569,7 +569,12 @@ static int ithc_start(struct pci_dev *pci)
 
 	// hid_add_device() can only be called after irq/polling is started and DMA is enabled,
 	// because it calls ithc_hid_parse() which reads the report descriptor via DMA.
-	CHECK_RET(hid_add_device, ithc->hid);
+	for (int retries = 0; ; retries++) {
+        ithc_set_active(ithc);
+        if (!CHECK_RET(hid_add_device, ithc->hid)) break;
+        if (retries > 10) return -ETIMEOUT;
+        msleep_interruptible(500);
+    }
 
 	CHECK(ithc_debug_init, ithc);
 
