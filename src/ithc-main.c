@@ -255,8 +255,8 @@ void ithc_set_active(struct ithc *ithc)
 	// set when this happens. The amount of truncated messages can become very high, resulting
 	// in user-visible effects (laggy/stuttering cursor). To avoid this, we use a CPU latency
 	// QoS request to prevent the CPU from entering low power states during touch interactions.
-	cpu_latency_qos_update_request(&ithc->activity_qos, 0);
-	mod_timer(&ithc->activity_timer, jiffies + msecs_to_jiffies(1000));
+	cpu_latency_qos_update_request(&ithc->activity_qos, ITHC_LATENCY_VALUE_MS);
+	mod_timer(&ithc->activity_timer, jiffies + msecs_to_jiffies(ITHC_LATENCY_RESET_TIMER_DURATION_MS));
 }
 
 static int ithc_set_device_enabled(struct ithc *ithc, bool enable)

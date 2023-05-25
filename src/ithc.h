@@ -19,6 +19,9 @@
 #define DEVNAME "ithc"
 #define DEVFULLNAME "Intel Touch Host Controller"
 
+#define ITHC_LATENCY_VALUE_MS 20
+#define ITHC_LATENCY_RESET_TIMER_DURATION_MS 100
+
 #undef pr_fmt
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
