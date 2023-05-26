@@ -70,6 +70,10 @@ static bool ithc_log_regs_enabled = false;
 module_param_named(logregs, ithc_log_regs_enabled, bool, 0);
 MODULE_PARM_DESC(logregs, "Log changes in register values (for debugging)");
 
+static bool ithc_powersave = false;
+module_param_named(powersave, ithc_powersave, bool, 0);
+MODULE_PARM_DESC(powersave, "Enable power-saving (worsens latency to touch input)");
+
 // Sysfs attributes
 
 static bool ithc_is_config_valid(struct ithc *ithc)
@@ -255,8 +259,8 @@ void ithc_set_active(struct ithc *ithc)
 	// set when this happens. The amount of truncated messages can become very high, resulting
 	// in user-visible effects (laggy/stuttering cursor). To avoid this, we use a CPU latency
 	// QoS request to prevent the CPU from entering low power states during touch interactions.
-	cpu_latency_qos_update_request(&ithc->activity_qos, ITHC_LATENCY_VALUE_MS);
-	mod_timer(&ithc->activity_timer, jiffies + msecs_to_jiffies(ITHC_LATENCY_RESET_TIMER_DURATION_MS));
+	cpu_latency_qos_update_request(&ithc->activity_qos, ithc->latency_value);
+	mod_timer(&ithc->activity_timer, jiffies + msecs_to_jiffies(ithc->latency_reset_timer_duration));
 }
 
 static int ithc_set_device_enabled(struct ithc *ithc, bool enable)
@@ -540,6 +544,13 @@ static int ithc_start(struct pci_dev *pci)
 
 	CHECK_RET(ithc_hid_init, ithc);
 
+    if (ithc_powersave) {
+        ithc->latency_value = ITHC_LATENCY_POWERSAVE_VALUE_MS;
+        ithc->latency_reset_timer_duration = ITHC_LATENCY_POWERSAVE_RESET_TIMER_DURATION_MS;
+    } else {
+        ithc->latency_value = ITHC_LATENCY_PRECISION_VALUE_MS;
+        ithc->latency_reset_timer_duration = ITHC_LATENCY_PRECISION_RESET_TIMER_DURATION_MS;
+    }
 	cpu_latency_qos_add_request(&ithc->activity_qos, PM_QOS_DEFAULT_VALUE);
 	timer_setup(&ithc->activity_timer, ithc_activity_timer_callback, 0);
 

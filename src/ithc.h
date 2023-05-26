@@ -19,9 +19,6 @@
 #define DEVNAME "ithc"
 #define DEVFULLNAME "Intel Touch Host Controller"
 
-#define ITHC_LATENCY_VALUE_MS 20
-#define ITHC_LATENCY_RESET_TIMER_DURATION_MS 100
-
 #undef pr_fmt
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
@@ -29,6 +26,12 @@
 #define CHECK_RET(...) do { int r = CHECK(__VA_ARGS__); if (r < 0) return r; } while (0)
 
 #define NUM_RX_BUF 16
+
+#define ITHC_LATENCY_POWERSAVE_VALUE_MS 20
+#define ITHC_LATENCY_POWERSAVE_RESET_TIMER_DURATION_MS 100
+
+#define ITHC_LATENCY_PRECISION_VALUE_MS 0
+#define ITHC_LATENCY_PRECISION_RESET_TIMER_DURATION_MS 1000
 
 struct ithc;
 
@@ -56,6 +59,9 @@ struct ithc {
 	struct ithc_device_config config;
 	struct ithc_dma_rx dma_rx[2];
 	struct ithc_dma_tx dma_tx;
+
+    int latency_value;
+    unsigned int latency_reset_timer_duration;
 };
 
 int ithc_reset(struct ithc *ithc);
